@@ -80,7 +80,17 @@ GO
 
 Create procedure TRANSFER @FromAcct INT, @ToAcct INT, @Amnt MONEY AS
 BEGIN 
-    update ACCOUNT set @FromAcct = AcctNo, @ToAcct = AcctNo, balance = balance - @Amnt where AcctNo = @FromAcct;
+    declare @DateTime DateTime
+    update ACCOUNT 
+    set balance = balance - @Amnt
+    WHERE AcctNo = @FromAcct
+
+    update ACCOUNT 
+    set balance = balance + @Amnt
+    WHERE AcctNo = @ToAcct
+
+    Insert Into LOG VALUES (@FromAcct, @DateTime , @ToAcct, @Amnt)
+
 END;
 
 Exec TRANSFER @FromAcct = 1, @ToAcct = 2, @Amnt = 400
@@ -88,4 +98,4 @@ Exec TRANSFER @FromAcct = 1, @ToAcct = 2, @Amnt = 400
 go
 
 SELECT *
-FROM ACCOUNT1;
+FROM LOG;
