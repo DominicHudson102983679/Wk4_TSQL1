@@ -45,6 +45,9 @@ END;
 
 /* ------------------------------------ Task 3
 
+DROP TABLE IF EXISTS ACCOUNT1;
+DROP TABLE IF EXISTS LOG;
+
 
 GO
 
@@ -52,8 +55,8 @@ CREATE TABLE ACCOUNT1 (
     AcctNo INT,
     Fname NVARCHAR(100),
     Lname NVARCHAR(100),
-    CreditLimit MONEY,
-    Balance MONEY,
+    CreditLimit INT,
+    Balance INT,
     PRIMARY KEY (AcctNo)
 )
 
@@ -61,14 +64,18 @@ CREATE TABLE LOG (
     OrigAcct INT,
     LogDateTime DATETIME,
     RecAcct INT,
-    Amount MONEY,
-    FOREIGN KEY (OrigAcct) references Account,
-    FOREIGN KEY (RecAcct) references Account,
-)
+    Amount INT,
+    PRIMARY KEY (OrigAcct, LogDateTime),
+    FOREIGN KEY (OrigAcct) references Account1 (AcctNo),
+    FOREIGN KEY (RecAcct) references Account1 (AcctNo)
+);
 
 
 GO
 
+*/
+
+/*
 INSERT INTO ACCOUNT1 (AcctNo, Fname, Lname, CreditLimit, Balance) VALUES
 (1, 'Dom', 'Hudson', 1000, 500),
 (2, 'Joel', 'Malcolm', 2000, 700)
@@ -78,24 +85,32 @@ DROP procedure if exists TRANSFER;
 
 GO
 
-Create procedure TRANSFER @FromAcct INT, @ToAcct INT, @Amnt MONEY AS
+Create procedure TRANSFER @FromAcct INT, @ToAcct INT, @Amnt INT AS
 BEGIN 
-    declare @DateTime DateTime
-    update ACCOUNT 
-    set balance = balance - @Amnt
+
+    
+
+    update ACCOUNT1 
+    set Balance = Balance - @Amnt
     WHERE AcctNo = @FromAcct
 
-    update ACCOUNT 
-    set balance = balance + @Amnt
+    update ACCOUNT1 
+    set Balance = Balance + @Amnt
     WHERE AcctNo = @ToAcct
 
-    Insert Into LOG VALUES (@FromAcct, @DateTime , @ToAcct, @Amnt)
+    Insert Into LOG (OrigAcct, LogDateTime, RecAcct, Amount) VALUES
+    (@FromAcct, SYSDATETIME(), @ToAcct, @Amnt);
 
 END;
+
+go
 
 Exec TRANSFER @FromAcct = 1, @ToAcct = 2, @Amnt = 400
 
 go
 
 SELECT *
-FROM LOG;
+FROM Account1;
+
+SELECT *
+FROM Log;
